@@ -30,6 +30,7 @@ export default function App() {
   const [selectedFile, setSelectedFile] = useState(null)
   const [filePath, setFilePath] = useState("/file-server/")
   const [showChartModal, setShowChartModal] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     setMyFiles(data)
@@ -46,6 +47,20 @@ export default function App() {
       },
     },
   };
+
+  // filtering the files based on input
+  const filteredFiles = myFiles.filter((file) =>
+    file.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleFileSelection = (file) => {
+    if (selectedFile && selectedFile.id === file.id) {
+      setSelectedFile(null);
+    } else {
+      setSelectedFile(file);
+    }
+  };
+
   return (
     <>
       {showChartModal && (
@@ -116,6 +131,27 @@ export default function App() {
             <p style={{ fontWeight: "bold" }}>My Files</p>
             <p>{selectedFile ? selectedFile.path : filePath}</p>
           </div>
+          {/* search input field */}
+          <div style={styles.searchContainer}>
+            <div style={styles.searchInputContainer}>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search files..."
+                style={styles.searchInput}
+              />
+              {searchQuery && (
+                <button
+                  style={styles.clearButton}
+                  onClick={() => setSearchQuery("")}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+          {/* control buttons */}
           <div style={styles.controlTools}>
             <button style={styles.controlButton}
               onClick={() => {
@@ -158,22 +194,50 @@ export default function App() {
           </div>
           <div style={styles.fileContainer}>
             <div style={{ width: "100%", padding: 10 }}>
-              {myFiles.map((file) => {
-
-                if (file.path.slice(0, filePath.length) === filePath) {
-                  return (
-                    <div style={styles.file} className="files" key={file.id} onClick={() => {
-                      if (selectedFile && selectedFile.id === file.id) {
-                        setSelectedFile(null)
-                        return
-                      }
-                      setSelectedFile(file)
-                    }}>
-                      <p style={{ fontWeight: selectedFile && selectedFile.id === file.id ? 'bold' : 'normal' }}>{file.name}</p>
+              {/* displaying files */}
+              {searchQuery !== "" ? (
+                filteredFiles.length > 0 ? (
+                  filteredFiles.map((file) => (
+                    <div
+                      style={styles.file}
+                      className="files"
+                      key={file.id}
+                      onClick={() => handleFileSelection(file)}
+                    >
+                      <p
+                        style={{
+                          fontWeight: selectedFile && selectedFile.id === file.id ? "bold" : "normal",
+                        }}
+                      >
+                        {file.name}
+                      </p>
                     </div>
-                  )
-                }
-              })}
+                  ))
+                ) : (
+                  <p>No matching files found.</p>
+                )
+              ) : (
+                // Display all files if no search query
+                myFiles
+                  .filter((file) => file.path.slice(0, filePath.length) === filePath)
+                  .map((file) => (
+                    <div
+                      style={styles.file}
+                      className="files"
+                      key={file.id}
+                      onClick={() => handleFileSelection(file)}
+                    >
+                      <p
+                        style={{
+                          fontWeight: selectedFile && selectedFile.id === file.id ? "bold" : "normal",
+                        }}
+                      >
+                        {file.name}
+                      </p>
+                    </div>
+                  ))
+              )}
+
             </div>
             {selectedFile && (
               <div style={styles.fileViewer}>
@@ -270,7 +334,7 @@ const styles = {
     padding: '10px',
     cursor: 'pointer',
   },
-  modalBody:{
+  modalBody: {
     width: '100%',
     height: '90%',
     display: 'flex',
@@ -292,5 +356,31 @@ const styles = {
     cursor: 'pointer',
     fontWeight: 'bold',
     backgroundColor: '#eee',
-  }
+  },
+  searchContainer: {
+    position: 'relative',
+    padding: '10px',
+    marginBottom: '10px',
+  },
+  searchInputContainer: {
+    position: 'relative',
+  },
+  searchInput: {
+    padding: '8px',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+    width: '100%',
+    fontSize: '14px',
+  },
+  clearButton: {
+    position: 'absolute',
+    top: '50%',
+    right: '10px',
+    transform: 'translateY(-50%)',
+    padding: '5px',
+    border: 'none',
+    borderRadius: '4px',
+    backgroundColor: '#eee',
+    cursor: 'pointer',
+  },
 };
