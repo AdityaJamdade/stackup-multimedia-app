@@ -2,7 +2,7 @@ export const Header = () => {
     return (
       <header style={styles.header}>
         <h1 style={styles.headerText}>S’s Drive</h1>
-        <p style={styles.headerSubText}>A File Manager created by Stackup@adi</p>
+        <p style={styles.headerSubText}>A File Manager created by stackupadi</p>
       </header>
     );
   }
