@@ -31,9 +31,13 @@ export default function App() {
   const [filePath, setFilePath] = useState("/file-server/")
   const [showChartModal, setShowChartModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentTime, setCurrentTime] = useState(Date.now());
 
   useEffect(() => {
     setMyFiles(data)
+    // Updating the current time every second
+    const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
+    return () => clearInterval(timer);
   }, [])
   var barChartOptions = {
     responsive: true,
@@ -57,9 +61,40 @@ export default function App() {
     if (selectedFile && selectedFile.id === file.id) {
       setSelectedFile(null);
     } else {
+      const updatedFiles = myFiles.map((f) => {
+        if (f.id === file.id) {
+          return {
+            ...f,
+            lastOpened: new Date().toLocaleString()
+          };
+        }
+        return f;
+      });
+      setMyFiles(updatedFiles);
       setSelectedFile(file);
     }
   };
+
+  const getTimeElapsed = (lastOpened) => {
+    const lastOpenedTime = new Date(lastOpened);
+    const currentTime = new Date();
+    const elapsedMilliseconds = currentTime - lastOpenedTime;
+    const elapsedSeconds = Math.floor(elapsedMilliseconds / 1000);
+    const elapsedMinutes = Math.floor(elapsedSeconds / 60);
+    const elapsedHours = Math.floor(elapsedMinutes / 60);
+    const elapsedDays = Math.floor(elapsedHours / 24);
+  
+    if (elapsedDays > 0) {
+      return `${elapsedDays} day${elapsedDays === 1 ? '' : 's'} ago`;
+    } else if (elapsedHours > 0) {
+      return `${elapsedHours} hour${elapsedHours === 1 ? '' : 's'} ago`;
+    } else if (elapsedMinutes > 0) {
+      return `${elapsedMinutes} minute${elapsedMinutes === 1 ? '' : 's'} ago`;
+    } else {
+      return 'Just now';
+    }
+  };
+ 
 
   return (
     <>
@@ -234,6 +269,10 @@ export default function App() {
                       >
                         {file.name}
                       </p>
+                      <p style={{ fontStyle: "italic", fontSize: "12px" }}>
+                        {file.lastOpened === undefined ? '' : `Last Opened: ${getTimeElapsed(file.lastOpened, currentTime)}`}
+                      </p>
+
                     </div>
                   ))
               )}
